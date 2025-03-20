@@ -1,0 +1,71 @@
+# Perform data cleaning and exploratory data analysis (EDA) on a dataset of your choice, such as the Titanic dataset from Kaggle. Explore the relationships between variables and identify patterns and trends in the data.
+# Install necessary packages (if not installed)
+install.packages("tidyverse", dependencies=TRUE)
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("skimr")
+install.packages("corrplot")
+
+# Load Libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(skimr)
+library(corrplot)
+
+# Load Titanic dataset
+file_path <- file.choose()  # Manually select CSV file
+titanic_data <- read.csv(file_path, header=TRUE, stringsAsFactors=FALSE)
+
+# Check first few rows
+head(titanic_data)
+
+# Fix column names (Ensure lowercase column names)
+colnames(titanic_data) <- tolower(trimws(colnames(titanic_data)))
+
+# View structure of data
+str(titanic_data)
+
+# Check for missing values
+colSums(is.na(titanic_data))
+
+# Handling Missing Values
+titanic_data$age[is.na(titanic_data$age)] <- median(titanic_data$age, na.rm=TRUE)  # Replace missing Age with median
+titanic_data$fare[is.na(titanic_data$fare)] <- median(titanic_data$fare, na.rm=TRUE)  # Replace missing Fare with median
+titanic_data$embarked[is.na(titanic_data$embarked)] <- "S"  # Replace missing Embarked with most common value
+
+# Convert categorical variables to factors
+titanic_data$survived <- as.factor(titanic_data$survived)
+titanic_data$pclass <- as.factor(titanic_data$pclass)
+titanic_data$sex <- as.factor(titanic_data$sex)
+titanic_data$embarked <- as.factor(titanic_data$embarked)
+
+# Summary Statistics
+summary(titanic_data)
+
+# -----------------------------------
+# VISUALIZATIONS
+# -----------------------------------
+
+# 1. Survival Rate by Gender
+ggplot(titanic_data, aes(x=sex, fill=survived)) +
+  geom_bar(position="dodge") +
+  ggtitle("Survival Rate by Gender")
+
+# 2. Survival Rate by Passenger Class
+ggplot(titanic_data, aes(x=pclass, fill=survived)) +
+  geom_bar(position="dodge") +
+  ggtitle("Survival Rate by Passenger Class")
+
+# 3. Age Distribution
+ggplot(titanic_data, aes(x=age, fill=survived)) +
+  geom_histogram(bins=30, alpha=0.7, position="identity") +
+  ggtitle("Age Distribution of Passengers")
+
+# 4. Correlation Matrix (Numerical Variables)
+numeric_vars <- titanic_data %>% select(where(is.numeric))
+cor_matrix <- cor(numeric_vars, use="complete.obs")
+corrplot(cor_matrix, method="color", tl.cex=0.8)
+
+# Print final cleaned dataset
+head(titanic_data)
